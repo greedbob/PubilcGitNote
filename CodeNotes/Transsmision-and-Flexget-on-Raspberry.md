@@ -14,6 +14,7 @@ category: [编程, PT]
 
 > 参考链接：  
 > https://github.com/transmission/transmission/wiki  
+> https://github.com/ronggang/transmission-web-control  
 > https://flexget.com/Configuration  
 > https://www.cnblogs.com/vipchenwei/articles/6909324.html  
 > https://www.cnblogs.com/rosepotato/p/8177988.html  
@@ -98,16 +99,14 @@ pi@raspberrypi:~ $ sudo mount /dev/sda1 /mnt/SSD
 
 ### 检查软件源并更新
 
-编辑/etc/apt/sources.list文件：
-`sudo nano /etc/apt/sources.list`
-
-注释掉官方源，替换为国内源，我使用了清华的镜像源：
+- 编辑/etc/apt/sources.list文件：`sudo nano /etc/apt/sources.list`  
+- 注释掉官方源，替换为国内源，我使用了清华的镜像源：
 ```
 deb http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/ stretch main contrib non-free rpi
 deb-src http://mirrors.tuna.tsinghua.edu.cn/raspbian/raspbian/ stretch main contrib non-free rpi
 
 ```
-接下来执行apt-get更新
+- 接下来执行apt更新：
 ```
 sudo apt-get update
 sudo apt-get upgrade
@@ -115,21 +114,21 @@ sudo apt-get upgrade
 
 ### 安装transsmission-daemon
 
-apt安装```sudo apt-get install transmission-daemon```
+- apt安装：`sudo apt-get install transmission-daemon`  
+- 默认配置目录清单：
 
-默认配置目录清单：
-|Item|Loccation|
-|:--|:--|
+Item|Loccation 
+--|--
 启动初始化脚本|/etc/init.d/transmission-daemon
 基本配置文件|/etc/default/transmission-daemon
 详细配置文件目录|/var/lib/transmsision-daemon/info
 下载存储目录|/var/lib/transmission-daemon/downloads
 
-修改配置文件：``` /etc/transmission-daemon/settings.json```
+- 修改配置文件：`/etc/transmission-daemon/settings.json`  
+- 配置文件的详细wiki：[EditingConfigurationFiles](https://github.com/transmission/transmission/wiki/Editing-Configuration-Files)  
+- 主要配置项：
 
-官方GitHub上有详细wiki[EditingConfigurationFiles](https://github.com/transmission/transmission/wiki/Editing-Configuration-Files)
-
-主要配置项：
+```
 - Bandwidth
     - alt-speed-enabled: Boolean
     - alt-speed-up: Number (KB/s, default = 50)
@@ -162,6 +161,7 @@ apt安装```sudo apt-get install transmission-daemon```
     - rpc-username: String
     - rpc-whitelist-enabled: Boolean (default = true)
 - Scheduling
+```
 
 ### 启动transsmission-daemon
 
@@ -177,9 +177,30 @@ sudo service transmission-daemon restart # 重新启动
 
 ![Transsmision-web](Transsmision-and-Flexget-on-Raspberry/Transsmision-web.png)
 
+### 使用[Transmission Web Control](https://github.com/ronggang/transmission-web-control)
+![TWC](https://github.com/ronggang/transmission-web-control/raw/master/src/tr-web-control/logo.png)
+> TWC 只是一套 Transmission 的 WebUI。  
+> 本项目主要目的是想加强 Transmission 在 Web 方面的操作能力。
+> 本项目设计之初仅针对PT站，可能有些功能对于普通BT种子而言有点水土不服，作者正在想办法加以改进。
+
+- 中文wiki请参考[Transmission Web Control Wiki](https://github.com/ronggang/transmission-web-control/wiki/Linux-Installation-CN)  
+- 安装过程：  
+  - 获取最新的安装脚本：`wget https://github.com/ronggang/transmission-web-control/raw/master/release/install-tr-control-cn.sh`
+  - 执行安装脚本：`bash install-tr-control-cn.sh`
+  - 安装完成后，用浏览器访问 Transmission Web Interface（如：http://192.168.1.1:9091/ ）即可看到新的界面；如果无法看到新界面，可能是浏览器缓存了，请按 Ctrl + F5 强制刷新页面或 清空缓存 后再重新打开。
+
+![TWC](https://user-images.githubusercontent.com/8065899/38598199-0d2e684c-3d8e-11e8-8b21-3cd1f3c7580a.png)
+
+- 遇到的问题：
+  树莓派直接下载github的release文件速度很慢，所以最好利用代理下载好放在temp文件夹内，使其自动识别后安装，省去下载步骤。
+  - 下载好最新版release：`v1.6.0-beta2.tar.gz`，注意命名，去掉v1.6.0之前的部分。
+  - sh文件中定义了temp文件夹是`TMP_FOLDER="/tmp/tr-web-control"`，所以将压缩包放在`/tmp/tr-web-control`。
+  - 之后再执行`bash install-tr-control-cn.sh`，会提示`\nv1.6.0-beta2.tar.gz  已存在，是否重新下载？（y/n）`，输入`n`回车即可直接开始安装。
+  - 请保证`v1.6.0-beta2.tar.gz`的完整性，如果是之前下载失败的安装包，可能会出现显示不全等问题。
+
 ### 安装flexget
 
-[Flexget](https://flexget.com) 基于 Python 开发，所以需要先安装 Python，官方给出的建议是 Python 2.7 / Python 3.3-3.5 [如果使用 Deluge 则只能使用 Python 2.7 ]
+[Flexget](https://flexget.com) 基于Python开发，所以需要先安装Python，官方给出的建议是Python 2.7 / Python 3.3-3.5，如果使用Deluge则只能使用 Python 2.7。
 
 - 准备工作
 ```
@@ -228,7 +249,7 @@ flexget daemon start -d
 ```
 
 - 访问web端
-```http(s)://yourip:port/flex``` 访问可以看到web后台
-```ps -aux | grep flexget```可以看到flexget进程
+`http(s)://yourip:port/flex` 访问可以看到web后台
+`ps -aux | grep flexget`可以看到flexget进程
 
 ![Flexget-web](Transsmision-and-Flexget-on-Raspberry/Flexget-web.png)
